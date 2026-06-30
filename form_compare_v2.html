@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<title>フォーム比較ツール</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+:root{
+  --bg:#f0f4f8;--surface:#fff;--border:#e2e8f0;
+  --text:#1a202c;--sub:#718096;
+  --blue:#3b82f6;--blue-lt:#eff6ff;
+  --red:#ef4444;--red-lt:#fef2f2;
+  --green:#10b981;--orange:#f59e0b;
+  --r:14px;--rs:10px;
+}
+body{font-family:-apple-system,'Hiragino Sans','Yu Gothic UI',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;padding-bottom:calc(24px + env(safe-area-inset-bottom));}
+
+.header{background:var(--surface);border-bottom:1px solid var(--border);padding:16px 20px 14px;position:sticky;top:0;z-index:100;}
+.header-inner{display:flex;align-items:center;gap:12px;}
+.header-icon{width:40px;height:40px;border-radius:10px;background:linear-gradient(135deg,#3b82f6,#6366f1);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;}
+.header h1{font-size:18px;font-weight:700;}
+.header p{font-size:12px;color:var(--sub);margin-top:1px;}
+
+.sw{padding:16px 16px 0;}
+.card{background:var(--surface);border-radius:var(--r);border:1px solid var(--border);overflow:hidden;margin-bottom:12px;}
+.card-hd{display:flex;align-items:center;gap:10px;padding:14px 16px 10px;border-bottom:1px solid var(--border);}
+.sbadge{width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;flex-shrink:0;}
+.sb-blue{background:var(--blue);}.sb-red{background:var(--red);}.sb-gray{background:#94a3b8;}
+.card-title{font-size:14px;font-weight:600;}
+.card-sub{font-size:12px;color:var(--sub);margin-top:1px;}
+
+.fpick{display:flex;align-items:center;gap:12px;padding:14px 16px;cursor:pointer;width:100%;}
+.fpick input[type="file"]{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none;}
+.fpick-icon{width:44px;height:44px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;border:1.5px dashed var(--border);background:var(--bg);}
+.fpick-icon.blue{border-color:var(--blue);background:var(--blue-lt);}
+.fpick-icon.red{border-color:var(--red);background:var(--red-lt);}
+.fpick-text{flex:1;}
+.fpick-label{font-size:14px;font-weight:500;color:var(--blue);}
+.fpick-label.red{color:var(--red);}
+.fpick-name{font-size:12px;color:var(--sub);margin-top:2px;word-break:break-all;}
+
+.mode-row{display:flex;gap:8px;padding:12px 16px;}
+.mbtn{flex:1;padding:10px 6px;border:1.5px solid var(--border);border-radius:var(--rs);background:var(--bg);font-size:13px;font-weight:600;color:var(--sub);cursor:pointer;text-align:center;}
+.mbtn.active{border-color:var(--blue);background:var(--blue-lt);color:var(--blue);}
+
+.pvw{padding:0 16px;}
+.side-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.panel{background:#111;border-radius:var(--rs);overflow:hidden;position:relative;aspect-ratio:9/16;}
+.panel video{position:absolute;top:0;left:0;width:100%;height:100%;object-fit:contain;}
+.ptag{position:absolute;top:8px;left:8px;z-index:5;font-size:11px;font-weight:700;color:#fff;padding:3px 8px;border-radius:20px;}
+.ptag.blue{background:rgba(59,130,246,0.85);}
+.ptag.red{background:rgba(239,68,68,0.85);}
+.ph{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;color:#555;font-size:12px;text-align:center;padding:12px;z-index:2;}
+.ph-ic{font-size:30px;opacity:0.4;}
+
+.over-stage{background:#111;border-radius:var(--rs);overflow:hidden;position:relative;aspect-ratio:16/9;}
+.over-stage video{position:absolute;top:0;left:0;width:100%;height:100%;object-fit:contain;}
+#vid-base{z-index:1;}#vid-ov{z-index:2;}
+
+.slcard{background:var(--surface);border-radius:var(--r);border:1px solid var(--border);padding:14px 16px;margin-top:10px;}
+.slrow{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+.slrow:last-child{margin-bottom:0;}
+.sllbl{font-size:12px;color:var(--sub);white-space:nowrap;min-width:56px;}
+.slrow input[type="range"]{flex:1;accent-color:var(--blue);}
+.slval{font-size:12px;font-weight:700;min-width:38px;text-align:right;}
+
+.ctrlcard{background:var(--surface);border-radius:var(--r);border:1px solid var(--border);padding:14px 16px;margin-top:10px;}
+.bigbtns{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px;}
+.abtn{padding:12px 4px;border:none;border-radius:var(--rs);font-size:14px;font-weight:700;cursor:pointer;text-align:center;}
+.abtn:active{opacity:0.7;}
+.btn-play{background:var(--green);color:#fff;}
+.btn-pause{background:var(--orange);color:#fff;}
+.btn-reset{background:#94a3b8;color:#fff;}
+.sprow{display:flex;align-items:center;gap:6px;}
+.splbl{font-size:12px;color:var(--sub);margin-right:2px;white-space:nowrap;}
+.spbtn{flex:1;padding:9px 2px;border:1.5px solid var(--border);border-radius:8px;background:var(--bg);font-size:12px;font-weight:700;color:var(--sub);cursor:pointer;}
+.spbtn.active{background:var(--blue);color:#fff;border-color:var(--blue);}
+.spbtn:active{opacity:0.7;}
+
+.dlcard{background:linear-gradient(135deg,#1e3a5f,#2d5a8e);border-radius:var(--r);padding:16px;margin-top:10px;}
+.dltitle{font-size:14px;font-weight:700;color:#fff;margin-bottom:4px;}
+.dlsub{font-size:12px;color:rgba(255,255,255,0.7);margin-bottom:12px;line-height:1.5;}
+.dlbtns{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.dlbtn{padding:12px 8px;border:none;border-radius:var(--rs);font-size:13px;font-weight:700;cursor:pointer;text-align:center;}
+.dlbtn:active{opacity:0.7;}
+.dl-s{background:#fff;color:#1e3a5f;}
+.dl-o{background:rgba(255,255,255,0.2);color:#fff;border:1.5px solid rgba(255,255,255,0.4);}
+
+.statusbar{margin:10px 16px 0;padding:10px 14px;background:var(--surface);border-radius:var(--rs);border:1px solid var(--border);font-size:12px;color:var(--sub);text-align:center;}
+.note{margin:12px 16px 0;font-size:11px;color:#a0aec0;line-height:1.8;text-align:center;}
+.hidden{display:none!important;}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-inner">
+    <div class="header-icon">🎾</div>
+    <div>
+      <h1>フォーム比較ツール</h1>
+      <p>2本の動画を並べて・重ねて比較する</p>
+    </div>
+  </div>
+</div>
+
+<div class="sw">
+
+  <div class="card">
+    <div class="card-hd">
+      <div class="sbadge sb-blue">1</div>
+      <div><div class="card-title">お手本動画を選ぶ</div><div class="card-sub">先生・お手本の動画ファイル</div></div>
+    </div>
+    <label class="fpick" for="file-a">
+      <input type="file" id="file-a" accept="video/*,video/mp4,video/quicktime,video/x-m4v">
+      <div class="fpick-icon blue" id="icon-a">📁</div>
+      <div class="fpick-text">
+        <div class="fpick-label" id="label-a">タップして動画を選ぶ</div>
+        <div class="fpick-name" id="name-a">MP4・MOV・その他動画ファイル対応</div>
+      </div>
+    </label>
+  </div>
+
+  <div class="card">
+    <div class="card-hd">
+      <div class="sbadge sb-red">2</div>
+      <div><div class="card-title">自分の動画を選ぶ</div><div class="card-sub">カメラロールから選択</div></div>
+    </div>
+    <label class="fpick" for="file-b">
+      <input type="file" id="file-b" accept="video/*,video/mp4,video/quicktime,video/x-m4v">
+      <div class="fpick-icon red" id="icon-b">📱</div>
+      <div class="fpick-text">
+        <div class="fpick-label red" id="label-b">タップして動画を選ぶ</div>
+        <div class="fpick-name" id="name-b">カメラロール・ファイルアプリから選択可</div>
+      </div>
+    </label>
+  </div>
+
+  <div class="card">
+    <div class="card-hd">
+      <div class="sbadge sb-gray">3</div>
+      <div><div class="card-title">表示モードを選ぶ</div></div>
+    </div>
+    <div class="mode-row">
+      <button class="mbtn active" id="tab-side" onclick="setMode('side')">⬛⬛ 並べて比較</button>
+      <button class="mbtn" id="tab-over" onclick="setMode('over')">🔲 重ねて比較</button>
+    </div>
+  </div>
+
+</div>
+
+<div id="view-side" class="pvw">
+  <div class="side-grid">
+    <div class="panel">
+      <div class="ptag blue">🔵 お手本</div>
+      <div class="ph" id="ph-a"><div class="ph-ic">▶</div><div>動画を選んでください</div></div>
+      <video id="vid-a" playsinline webkit-playsinline preload="metadata"></video>
+    </div>
+    <div class="panel">
+      <div class="ptag red">🔴 自分</div>
+      <div class="ph" id="ph-b"><div class="ph-ic">📱</div><div>動画を選んでください</div></div>
+      <video id="vid-b" playsinline webkit-playsinline preload="metadata"></video>
+    </div>
+  </div>
+</div>
+
+<div id="view-over" class="pvw hidden">
+  <div class="over-stage">
+    <div class="ph" id="ph-ov"><div class="ph-ic">🎬</div><div>両方の動画を選んでください</div></div>
+    <video id="vid-base" playsinline webkit-playsinline preload="metadata"></video>
+    <video id="vid-ov" playsinline webkit-playsinline preload="metadata"></video>
+  </div>
+  <div class="slcard">
+    <div class="slrow">
+      <span class="sllbl">透明度</span>
+      <input type="range" min="0" max="100" value="50" id="sl-op" oninput="updateOp(this.value)">
+      <span class="slval" id="val-op">50%</span>
+    </div>
+    <div class="slrow">
+      <span class="sllbl">サイズ</span>
+      <input type="range" min="50" max="150" value="100" id="sl-sc" oninput="updateSc(this.value)">
+      <span class="slval" id="val-sc">100%</span>
+    </div>
+  </div>
+</div>
+
+<div class="sw">
+  <div class="ctrlcard">
+    <div class="bigbtns">
+      <button class="abtn btn-play" onclick="syncPlay()">▶ 再生</button>
+      <button class="abtn btn-pause" onclick="syncPause()">⏸ 停止</button>
+      <button class="abtn btn-reset" onclick="syncReset()">↩ 最初</button>
+    </div>
+    <div class="sprow">
+      <span class="splbl">速度</span>
+      <button class="spbtn" onclick="setSp(0.25)">0.25×</button>
+      <button class="spbtn" onclick="setSp(0.5)">0.5×</button>
+      <button class="spbtn" onclick="setSp(0.75)">0.75×</button>
+      <button class="spbtn active" onclick="setSp(1)">1×</button>
+    </div>
+  </div>
+
+  <div class="dlcard">
+    <div class="dltitle">📥 現在のフレームを画像保存</div>
+    <div class="dlsub">一時停止した瞬間を画像としてダウンロードできます。<br>比較したい場面で停止してから保存してください。</div>
+    <div class="dlbtns">
+      <button class="dlbtn dl-s" onclick="dlSide()">並べて保存</button>
+      <button class="dlbtn dl-o" onclick="dlOver()">重ねて保存</button>
+    </div>
+  </div>
+
+  <div class="statusbar" id="status">動画を選ぶと操作できます</div>
+  <p class="note">動画はこの端末の外に送信されません。完全ローカル処理です。<br>iPhone / Android / PC すべてのブラウザで動作します。</p>
+</div>
+
+<canvas id="cvs" style="display:none;"></canvas>
+
+<script>
+var mode='side', spd=1;
+
+function setupFile(id, vids, iconId, labelId, nameId) {
+  var inp = document.getElementById(id);
+
+  // iOSはlabelのforが効かないことがあるため直接クリックも追加
+  var lbl = inp.closest ? inp.closest('label') : null;
+  if (lbl) {
+    lbl.addEventListener('click', function(e) {
+      if (e.target !== inp) inp.click();
+    });
+  }
+
+  inp.addEventListener('change', function() {
+    var f = this.files[0];
+    if (!f) return;
+    var url = URL.createObjectURL(f);
+    vids.forEach(function(vid) {
+      var v = document.getElementById(vid);
+      v.src = url;
+      v.load();
+    });
+    document.getElementById(iconId).textContent = '✅';
+    document.getElementById(labelId).textContent = '読み込み完了';
+    document.getElementById(nameId).textContent = f.name;
+
+    // placeholder 消す
+    if (id === 'file-a') {
+      hide('ph-a'); hide('ph-ov');
+    } else {
+      hide('ph-b'); hide('ph-ov');
+    }
+    applyOv();
+    st((id==='file-a'?'お手本':'自分の動画')+'を読み込みました ✓');
+  });
+}
+
+setupFile('file-a',['vid-a','vid-base'],'icon-a','label-a','name-a');
+setupFile('file-b',['vid-b','vid-ov'], 'icon-b','label-b','name-b');
+
+function hide(id){document.getElementById(id).classList.add('hidden');}
+
+function setMode(m){
+  mode=m;
+  document.getElementById('view-side').classList.toggle('hidden',m!=='side');
+  document.getElementById('view-over').classList.toggle('hidden',m!=='over');
+  document.getElementById('tab-side').classList.toggle('active',m==='side');
+  document.getElementById('tab-over').classList.toggle('active',m==='over');
+  if(m==='over') applyOv();
+}
+
+function applyOv(){
+  var v=document.getElementById('vid-ov');
+  v.style.opacity=document.getElementById('sl-op').value/100;
+  v.style.transform='scale('+document.getElementById('sl-sc').value/100+')';
+  v.style.transformOrigin='center center';
+}
+function updateOp(v){document.getElementById('val-op').textContent=v+'%';document.getElementById('vid-ov').style.opacity=v/100;}
+function updateSc(v){document.getElementById('val-sc').textContent=v+'%';document.getElementById('vid-ov').style.transform='scale('+v/100+')';}
+
+function getVids(){
+  return mode==='side'
+    ?[document.getElementById('vid-a'),document.getElementById('vid-b')]
+    :[document.getElementById('vid-base'),document.getElementById('vid-ov')];
+}
+
+function syncPlay(){getVids().forEach(function(v){v.playbackRate=spd;v.play();});st('再生中（速度: '+spd+'×）');}
+function syncPause(){getVids().forEach(function(v){v.pause();});st('停止しました');}
+function syncReset(){getVids().forEach(function(v){v.pause();v.currentTime=0;});st('最初に戻しました');}
+
+function setSp(s){
+  spd=s;
+  document.querySelectorAll('.spbtn').forEach(function(b){b.classList.toggle('active',b.textContent.trim()===s+'×');});
+  getVids().forEach(function(v){v.playbackRate=s;});
+  st('速度を '+s+'× に設定');
+}
+
+function drawSide(cvs){
+  var vA=document.getElementById('vid-a'),vB=document.getElementById('vid-b');
+  var w=Math.max(vA.videoWidth||640,1),h=Math.max(vA.videoHeight||360,1);
+  cvs.width=w*2+8; cvs.height=h;
+  var c=cvs.getContext('2d');
+  c.fillStyle='#111'; c.fillRect(0,0,cvs.width,cvs.height);
+  c.drawImage(vA,0,0,w,h);
+  c.drawImage(vB,w+8,0,w,h);
+  c.fillStyle='rgba(59,130,246,0.85)'; c.fillRect(8,8,72,24);
+  c.fillStyle='rgba(239,68,68,0.85)';  c.fillRect(w+16,8,52,24);
+  c.fillStyle='#fff'; c.font='bold 14px sans-serif';
+  c.fillText('お手本',12,26); c.fillText('自分',w+20,26);
+}
+
+function drawOver(cvs){
+  var vA=document.getElementById('vid-base'),vB=document.getElementById('vid-ov');
+  var w=Math.max(vA.videoWidth||640,1),h=Math.max(vA.videoHeight||360,1);
+  cvs.width=w; cvs.height=h;
+  var c=cvs.getContext('2d');
+  c.drawImage(vA,0,0,w,h);
+  c.globalAlpha=document.getElementById('sl-op').value/100;
+  c.drawImage(vB,0,0,w,h);
+  c.globalAlpha=1;
+}
+
+function doDownload(drawFn,fname){
+  var cvs=document.getElementById('cvs');
+  try{
+    drawFn(cvs);
+    cvs.toBlob(function(blob){
+      var a=document.createElement('a');
+      a.href=URL.createObjectURL(blob);
+      a.download=fname;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      st('保存しました ✓');
+    },'image/png');
+  }catch(e){
+    st('保存に失敗しました。動画を先に選んでください。');
+  }
+}
+
+function dlSide(){
+  var vA=document.getElementById('vid-a'),vB=document.getElementById('vid-b');
+  if(!vA.src||!vB.src){st('両方の動画を先に選んでください');return;}
+  doDownload(drawSide,'compare_side.png');
+}
+function dlOver(){
+  var vA=document.getElementById('vid-base'),vB=document.getElementById('vid-ov');
+  if(!vA.src||!vB.src){st('両方の動画を先に選んでください');return;}
+  doDownload(drawOver,'compare_over.png');
+}
+
+function st(t){document.getElementById('status').textContent=t;}
+</script>
+</body>
+</html>
