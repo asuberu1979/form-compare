@@ -282,7 +282,24 @@ function getVids(){
     :[document.getElementById('vid-base'),document.getElementById('vid-ov')];
 }
 
-function syncPlay(){getVids().forEach(function(v){v.playbackRate=spd;v.play();});st('再生中（速度: '+spd+'×）');}
+function syncPlay(){
+  var vids=getVids();
+  // iOSはplay()を連続呼び出しすると片方が無視されるため順番に呼ぶ
+  vids[0].playbackRate=spd;
+  var p=vids[0].play();
+  if(p!==undefined){
+    p.then(function(){
+      vids[1].playbackRate=spd;
+      vids[1].play();
+    }).catch(function(){
+      vids[1].playbackRate=spd;
+      vids[1].play();
+    });
+  } else {
+    setTimeout(function(){vids[1].playbackRate=spd;vids[1].play();},50);
+  }
+  st('再生中（速度: '+spd+'×）');
+}
 function syncPause(){getVids().forEach(function(v){v.pause();});st('停止しました');}
 function syncReset(){getVids().forEach(function(v){v.pause();v.currentTime=0;});st('最初に戻しました');}
 
