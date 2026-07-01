@@ -7,13 +7,6 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <title>フォーム比較ツール</title>
 <style>
-<meta property="og:title" content="フォーム比較ツール｜理想と現実の差を可視化する" />
-<meta property="og:description" content="2本の動画を並べて・重ねて比較できる無料ツール。インストール不要、登録不要。スマホでもPCでも動きます。" />
-<meta property="og:image" content="https://asuberu1979.github.io/form-compare/ogp.png" />
-<meta property="og:url" content="https://asuberu1979.github.io/form-compare/form_compare_v2.html" />
-<meta property="og:type" content="website" />
-<meta name="twitter:card" content="summary_large_image" />
-<meta name="twitter:image" content="https://asuberu1979.github.io/form-compare/ogp.png" />
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
 :root{
   --bg:#f0f4f8;--surface:#fff;--border:#e2e8f0;
@@ -120,14 +113,14 @@ body{font-family:-apple-system,'Hiragino Sans','Yu Gothic UI',sans-serif;backgro
       <div class="sbadge sb-blue">1</div>
       <div><div class="card-title">お手本動画を選ぶ</div><div class="card-sub">先生・お手本の動画ファイル</div></div>
     </div>
-    <label class="fpick" for="file-a">
-      <input type="file" id="file-a" accept="video/*,video/mp4,video/quicktime,video/x-m4v">
+    <input type="file" id="file-a" accept="video/mp4,video/quicktime,video/x-m4v,video/mpeg,video/*" style="display:none">
+    <div class="fpick" id="btn-a" onclick="document.getElementById('file-a').click()">
       <div class="fpick-icon blue" id="icon-a">📁</div>
       <div class="fpick-text">
         <div class="fpick-label" id="label-a">タップして動画を選ぶ</div>
         <div class="fpick-name" id="name-a">MP4・MOV・その他動画ファイル対応</div>
       </div>
-    </label>
+    </div>
   </div>
 
   <div class="card">
@@ -135,14 +128,14 @@ body{font-family:-apple-system,'Hiragino Sans','Yu Gothic UI',sans-serif;backgro
       <div class="sbadge sb-red">2</div>
       <div><div class="card-title">自分の動画を選ぶ</div><div class="card-sub">カメラロールから選択</div></div>
     </div>
-    <label class="fpick" for="file-b">
-      <input type="file" id="file-b" accept="video/*,video/mp4,video/quicktime,video/x-m4v">
+    <input type="file" id="file-b" accept="video/mp4,video/quicktime,video/x-m4v,video/mpeg,video/*" style="display:none">
+    <div class="fpick" id="btn-b" onclick="document.getElementById('file-b').click()">
       <div class="fpick-icon red" id="icon-b">📱</div>
       <div class="fpick-text">
         <div class="fpick-label red" id="label-b">タップして動画を選ぶ</div>
         <div class="fpick-name" id="name-b">カメラロール・ファイルアプリから選択可</div>
       </div>
-    </label>
+    </div>
   </div>
 
   <div class="card">
@@ -229,15 +222,6 @@ var mode='side', spd=1;
 
 function setupFile(id, vids, iconId, labelId, nameId) {
   var inp = document.getElementById(id);
-
-  // iOSはlabelのforが効かないことがあるため直接クリックも追加
-  var lbl = inp.closest ? inp.closest('label') : null;
-  if (lbl) {
-    lbl.addEventListener('click', function(e) {
-      if (e.target !== inp) inp.click();
-    });
-  }
-
   inp.addEventListener('change', function() {
     var f = this.files[0];
     if (!f) return;
